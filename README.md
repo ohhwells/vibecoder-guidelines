@@ -8,7 +8,7 @@ Everything needed to build a template that the OhhWells canvas editor and the AI
 | [starter/](starter/) | The platform's starter template, synced automatically from the OhhWells templates repo. Copy it; do not edit it here. |
 | [2-CONVENTIONS.md](2-CONVENTIONS.md) | Writing any component: the `data-ohw-*` contract, keys, sections, links, brand tokens, forms, maps, carousels. |
 | [3-CHECKS.md](3-CHECKS.md) | Before publishing: build, the convention checker, the AI review (with your own Anthropic key), CI. |
-| [check/](check/) | The checker itself. Deterministic rules 1–24 plus the AI review runner. Zero npm dependencies, Node 18+. |
+| [check/](check/) | The checker itself. Deterministic rules 1 to 25 plus the AI review runner. Zero npm dependencies, Node 18+. |
 
 ## The one idea behind every rule
 
@@ -27,5 +27,5 @@ node /path/to/vibecoder-guidelines/check/run.mjs                        # checks
 ```
 
 - Public and read-only: anyone can read and clone, only the OhhWells team can change it. If a rule flags something your template genuinely satisfies, open an issue with the finding and the source; do not work around it.
-- Rule numbers 1–24 in these docs are the checker's rule numbers (`check/rules/NN-*.mjs`).
+- Rule numbers 1 to 25 in these docs are the checker's rule numbers (`check/rules/NN-*.mjs`).
 - Run it again after every change; it takes about a second and needs no install.

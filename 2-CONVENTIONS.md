@@ -252,6 +252,16 @@ Dual-purpose attributes you **do** author, for their documented purpose only: `d
 
 **Rule 20**: `@ohhwells/bridge` is a dependency (error) and its exact pin matches the newest pin across the repo (warn). The pin is the AI feature gate; keep it current and redeploy after bumps.
 
+**Rule 25: page CRUD.** The editor can duplicate, rename, delete and add blank pages. Those pages have no folder under `src/app/`, so the template must route them itself. The starter ships all three pieces; copy them as they are.
+
+- `src/middleware.ts`, one line (error if missing or not running `sitePagesMiddleware`):
+  ```ts
+  export { sitePagesMiddleware as middleware, sitePagesMiddlewareConfig as config } from '@ohhwells/bridge/pages';
+  ```
+  It serves a renamed page at its new URL (with a 307 from the old one) and hides a deleted page. If the template needs its own middleware, call `sitePagesMiddleware(request)` from it rather than replacing it.
+- `src/app/[...page]/page.tsx` calling `renderCatchAllPage` (error if missing). `renderDuplicate` must import the source page **relatively** (`` import(`../${sourceSegment}/page`) ``, `import('../page')` for the homepage). webpack builds that import's context module only from a real relative prefix, so an `@/app/…` alias import passes the build and fails at runtime (error).
+- `src/components/layout/Breadcrumb.tsx`, the blank page's header: the bridge's `EmptySection` inside the template's own section wrapper. Its keys carry the page id (`` `hero-${pageId}-title` ``), never the path, so edits survive a rename. Wrap it in a section class the template actually defines: the starter's `page-section` is not in every template (ledger reuses its `page-header` band).
+
 ---
 
 ## 15. Rule index
@@ -282,6 +292,7 @@ Dual-purpose attributes you **do** author, for their documented purpose only: `d
 | 22 | Key/href-key/section/`ohwKey`/`sectionId` in a `[param]` route not interpolating the param | error |
 | 23 | Href-keyed link in a non-chrome file with no role (non-social) | error |
 | 24 | Carousel: no `'use client'`, no `{...bind}`, duplicate key / missing slide marker, `.slice` cap, `next/image` without `unoptimized`, incomplete manual container | error / warn |
+| 25 | No `sitePagesMiddleware` in `src/middleware.ts`; no `[...page]` catch-all calling `renderCatchAllPage`; catch-all importing through `@/` | error |
 
 AI review rules (advisory; `warn` or `info`):
 
