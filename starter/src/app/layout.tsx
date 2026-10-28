@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
-import { OhhwellsBridge } from '@ohhwells/bridge';
+import { OhhwellsBridge, OhwLoaderSurface } from '@ohhwells/bridge';
 import { BrandProvider } from '@/components/layout/BrandProvider';
-import { OHW_LOADER_STYLE, OhwLoaderSpinner } from '@/components/layout/OhwLoaderSurface';
 import { Navbar } from '@/components/layout/Navbar';
 import { FooterLayouts } from '@/components/layout/Footer';
 import { globalContent } from '@/content/global';
@@ -21,18 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={fontClasses}>
       <body>
-        {/* Customer-site loader: covers the template from FIRST PAINT until the bridge applies
-            the site's content (fetchState done), so visitors never see template defaults flash.
-            The inline script flips it visible synchronously — before hydration — whenever the
-            page serves a customer site (subdomain hostname or ?subdomain query). */}
-        <div id="ohw-loader" suppressHydrationWarning style={{ ...OHW_LOADER_STYLE, display: 'none' }}>
-          <OhwLoaderSpinner />
-        </div>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.hostname.split(".");var fromHost=p.length>=3&&p[0]!=="www"?p[0]:"";var fromQuery=new URLSearchParams(location.search).get("subdomain")||"";if(!fromHost&&!fromQuery)return;var e=document.getElementById("ohw-loader");if(e)e.style.display="flex"}catch(e){}})();`,
-          }}
-        />
+        {/* Covers the template from first paint until the bridge applies this site's content.
+            Shared from the bridge (OHH-850) — the local copy this replaced could not detect a
+            branded custom domain, so the flash it exists to hide was fully visible there. */}
+        <OhwLoaderSurface />
         <Suspense>
           <OhhwellsBridge />
         </Suspense>
