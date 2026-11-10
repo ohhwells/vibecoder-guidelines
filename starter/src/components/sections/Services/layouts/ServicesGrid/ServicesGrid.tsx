@@ -52,7 +52,7 @@ export function ServicesGrid({ content, sectionId }: ServicesGridProps) {
           )}
         </div>
 
-        <div className="services-grid__grid">
+        <div className="services-grid__grid" data-ohw-cards>
           {content.items.map((item, i) => (
             <div key={i} className="services-grid__card">
               {item.iconUrl && (
