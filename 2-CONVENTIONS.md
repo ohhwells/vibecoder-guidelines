@@ -2,7 +2,7 @@
 
 Rule numbers (e.g. **rule 9**) refer to the checker in `check/rules/`. "Error" fails CI; "warn" is reported but passes. The AI review rule ids (`ai-*`) refer to `check/ai/rules/`.
 
-Contents: [Architecture](#1-architecture) · [Editables](#2-editable-elements) · [Keys](#3-keys) · [Sections](#4-sections) · [Links & roles](#5-links-and-roles) · [Chrome](#6-navbar-and-footer-chrome) · [Socials](#7-socials) · [Brand tokens](#8-brand-and-colour-tokens) · [Forms](#9-forms) · [Maps](#10-maps) · [Carousels](#11-carousels) · [Other modes](#12-video-icons-multi-state-scheduling) · [Reserved](#13-reserved-namespace-never-author) · [Plumbing](#14-plumbing) · [Rule index](#15-rule-index)
+Contents: [Architecture](#1-architecture) · [Editables](#2-editable-elements) · [Keys](#3-keys) · [Sections](#4-sections) · [Links & roles](#5-links-and-roles) · [Chrome](#6-navbar-and-footer-chrome) · [Socials](#7-socials) · [Brand tokens](#8-brand-and-colour-tokens) · [Forms](#9-forms) · [Maps](#10-maps) · [Carousels](#11-carousels) · [Other modes](#12-video-icons-multi-state-scheduling) · [Blog post cards](#13-blog-post-cards) · [Reserved](#14-reserved-namespace-never-author) · [Plumbing](#15-plumbing) · [Rule index](#16-rule-index)
 
 ---
 
@@ -232,7 +232,36 @@ export function Gallery({ content }) {
 
 ---
 
-## 13. Reserved namespace — never author
+## 13. Blog post cards
+
+A card that previews a post (a blog, insights or articles item) is **not its own content**. It shows the post, and the owner edits it on the post page. The editor makes cards read-only, selects a card as a whole ("Edit post" and a field-visibility gear) and lets the owner pick how many posts a list shows.
+
+- **A card uses the post's own keys.** The card title carries the exact `data-ohw-key` the post page uses for its title, and the same goes for date, image, excerpt, category and read time. Content is one site-wide map (§3), so editing the post updates every card on every page. A card with keys of its own (`home-insights-${slug}-title`) drifts out of sync, and the editor gives the owner no way to edit it.
+- **Key by the post's slug, never by position.** `home-front-lead-title` or `latest-item-3-title` belongs to whichever post happens to be in that slot, so the stored text ends up on the wrong post as soon as the list changes. Build the key from the post (`` `article-${slug}-title` ``), the same helper the post page uses.
+- **Mark the structure.** Copy the helpers from `haven-realty/src/lib/ohw.ts`:
+  ```tsx
+  <div {...ohwPostList('home-insights', 3)}>                 {/* data-ohw-post-list (+ -count) */}
+    {posts.map((post) => (
+      <article key={post.slug} {...ohwPostCard(post.href)}> {/* data-ohw-post-card="/insights/<slug>" */}
+        <Link href={post.href} className="stretched-link" aria-labelledby={`${post.slug}-card-title`} />
+        <h3 id={`${post.slug}-card-title`} {...ohwPostField('title')} {...ohw(`article-${post.slug}-title`, 'text')}>{post.title}</h3>
+        <p {...ohwPostField('description')} {...ohw(`article-${post.slug}-excerpt`, 'text')}>{post.excerpt}</p>
+      </article>
+    ))}
+  </div>
+  ```
+  - `data-ohw-post-list="<id>"` goes on the element holding the cards. Use a unique id per placement (derive it from `sectionId`). It may sit at any depth: a card belongs to its **nearest** list ancestor. `data-ohw-post-list-count` is the default number shown (`1` to `6`, or `all` for an index page). Without it the default is 3.
+  - `data-ohw-post-card` is the post's page path, exactly as routed (`/blog/<slug>`, no trailing slash). A card with no list around it (a "Read: …" link on a service page) is fine: it gets "Edit post" but no gear.
+  - `data-ohw-post-field` is one of `title`, `date`, `image`, `description`, `category`, `read-time`. Put it on the element that hides when the owner turns that field off: the key element itself, or a wrapper holding it plus its separator or frame.
+- **The post page carries the same markers on its own fields** (`data-ohw-post-field="title"` on the post's title, outside any card). After a publish, the backend reads the deployed HTML to learn each post's title key and which pages feature it. So the markers must be in the server-rendered HTML, not added by client-only code.
+- **Render every card the list may show, in display order.** The bridge shows the first N (the owner's pick, else the count attribute, else 3) and hides the rest, in the editor and on the published site. Do not `.slice()` to a fixed count yourself.
+- **Card fields need a matching post field.** If a card shows a field (excerpt, category, read time), the post page must render the same key, or the owner can never edit it. When a post has no value for an optional field, render nothing for it, on the card and on the post page.
+- **Anything else inside a card is fixed copy, with no key** ("Read article", a "Featured" flag, an arrow). Card links carry no `data-ohw-href-key`: the destination is the post's path, and a renamed post keeps working through the 307 from its old URL (rule 25).
+- The owner's list settings live in `__ohw_post_lists` and are bridge-managed. Never author them (rule 17).
+
+---
+
+## 14. Reserved namespace — never author
 
 **Rule 17** (error) flags all of these:
 
@@ -244,7 +273,7 @@ Dual-purpose attributes you **do** author, for their documented purpose only: `d
 
 ---
 
-## 14. Plumbing
+## 15. Plumbing
 
 **Rule 18** on `src/app/layout.tsx`: the file exists (error); it loads the bridge styles via `import '@ohhwells/bridge/styles'` or a synced static `ohhwells-bridge.css` link (error); `<OhhwellsBridge />` is wrapped in `<Suspense>` (error); the `#ohw-loader` first-paint loader is present (warn).
 
@@ -264,7 +293,7 @@ Dual-purpose attributes you **do** author, for their documented purpose only: `d
 
 ---
 
-## 15. Rule index
+## 16. Rule index
 
 | # | Checks | Level |
 |---|---|---|
